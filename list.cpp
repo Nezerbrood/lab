@@ -1,5 +1,13 @@
 #include "list.h"
 
+void List::swap(Node* first, Node* second*)
+{
+	int tmp;
+	tmp = first->value;
+	first->value = second->value;
+	second->value = tmp;
+}
+
 void List::push_back(int val)
 {
 	Node* cur = new Node;
@@ -228,4 +236,31 @@ int List::search(int val)
 		}
 	}
 	return - 1;
+}
+
+int List::get(int index)
+{
+	Node* cur = head;
+	for (int i = 0; i < index; i++) {
+		cur = cur->right;
+	}
+	return cur->value;
+}
+
+void List::sortB()
+{
+	Node* cur = head;
+	for (int i = 1; i < size; i++) {
+		Node* tmp = cur->left;
+		while (cur->value < tmp->value){
+			if (tmp != head) { 
+				tmp = tmp->left; 
+			}
+			else {
+				break;
+			}
+		}
+		swap(cur, tmp);
+		cur = cur->right;
+	}
 }

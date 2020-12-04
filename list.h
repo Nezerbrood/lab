@@ -10,6 +10,7 @@ public:
 };
 class List
 {
+	void swap(Node* first, Node* second*);
 public:
 	Node* head = NULL;
 	Node* tail = NULL;
@@ -33,6 +34,8 @@ public:
 	void destroy();
 	bool is_empty();
 	int search(int val);
+	int get(int index);
+	void sortB();
 };
 
 // 1. возможность подключать как библиотеку
