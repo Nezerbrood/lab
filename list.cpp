@@ -1,46 +1,12 @@
 #include "list.h"
 
-void List::swap(Node* first, Node* second*)
-{
-	int tmp;
-	tmp = first->value;
-	first->value = second->value;
-	second->value = tmp;
-}
-
 void List::push_back(int val)
 {
-	Node* cur = new Node;
-	cur->value = val;
-	cur->left = tail;
-	cur->right = NULL;
-	if (tail == NULL) {
-		size = 1;
-		tail = cur;
-		head = cur;
-	}
-	else {
-		size++;
-		tail->right = cur;
-		tail = cur;
-	}
+	create_node(tail, NULL, val);
 }
 
 void List::push_front(int val){
-	Node* cur = new Node;
-	cur->value = val;
-	cur->left = NULL;
-	cur ->right = head;
-	if (head == NULL) {
-		size = 1;
-		tail = cur;
-		head = cur;
-	}
-	else {
-		head->left = cur;
-		head = cur;
-		size++;
-	}
+	create_node(NULL, head, val);
 }
 
 void List::push_in(int indx, int val)
@@ -48,161 +14,53 @@ void List::push_in(int indx, int val)
 	if (indx >= size) {
 		push_back(val);
 		return;
-	}
-	else {
-		Node* tmp = head;
-		for (int i = 0; i < indx; i++) {
-				tmp = tmp->right;
-		}
-		if (tmp == head) {
-			push_front(val);
-			return;
-		}
-		else if (tmp == tail) {
-			push_back(val);
-			return;
-		}
-		else {
-			Node* cur = new Node;
-			tmp->left->right = cur;
-			cur->left = tmp->left;
-			tmp->left = cur;
-			cur->right = tmp;
-			cur->value = val;
-			size++;
-		}
+	} else {
+		Node* ptr = get_pointer(indx);
+		create_node(ptr->left, ptr, val);
 	}
 }
 
 void List::insert_after(Node* pointer, int val)
 {
-	Node* cur = new Node;
-	cur->right = pointer->right;
-	pointer->right = cur;
-	cur->left = pointer;
-	size++;
+	create_node(pointer, pointer->right, val);
 }
 
 void List::insert_afore(Node* pointer, int val)
 {
-	Node* cur = new Node;
-	cur->left = pointer;
-	cur->right = pointer->right;
-	cur->value = val;
-	pointer->right = cur;
-	size++;
+	create_node(pointer->left, pointer, val);
 }
 
 void List::remove(int val)
 {
-	Node* tmp = head;
-	if (!tmp) { return; }
-	while (true) {
-		if (tmp->value == val) {
-			if (tmp == head) {
-				pop_front();
-				break;
-			} else if (tmp == tail) {
-				pop_back();
-				break;
-			} else {
-				tmp->left->right = tmp->right;
-				tmp->right->left = tmp->left;
-				delete tmp;
-				size--;
-				break;
-			}
-		}
-		else {
-			if (!tmp->right) {
-				tmp = tmp->right;
-			}
-			else {
-				return;
-			}
-		}
-	}
+	int search_result = search(val);
+	if (search_result == -1) { return; }
+	Node* ptr = get_pointer(search_result);
+	erase_p(ptr);
 }
 
 void List::erase(int indx){
-	Node* cur = head;
-	for (int i = 0; i < indx; i++) {
-		cur = cur->right;
-	}
-	if (cur == head) {
-		pop_front();
-		return;
-	}
-	else if (cur == tail) {
-		pop_back();
-		return;
-	}
-	cur->left->right = cur->right;
-	cur->right->left = cur->left;
-	size--;
-	delete cur;
-
+	Node* ptr = get_pointer(indx);
+	erase_p(ptr);
 }
 
 void List::pop_front()
 {
-	if (head == tail) {
-		size--;
-		delete head;
-		head = NULL;
-		tail = NULL;
-
-	}
-	else {
-		head->right->left = NULL;
-		size--;
-		Node* tmp = head->right;
-		delete head;
-		head = tmp;
-	}
+	erase_p(head);
 }
 
 void List::pop_back()
 {
-	if (head == tail) {
-		delete head;
-		head = NULL;
-		tail = NULL;
-		size = 0;
-	}
-	else {
-		tail->left->right = NULL;
-		size--;
-		Node* tmp = tail->left;
-		delete tail;
-		tail = tmp;
-	}
+	erase_p(tail);
 }
 
 void List::remove_after(Node* pointer)
 {
-	Node* tmp = pointer->right;
-	if (tmp == tail) {
-		pop_back();
-		return;
-	}
-	pointer->right = tmp->right;
-	tmp->right->left = pointer;
-	size--;
-	delete tmp;
+	erase_p(pointer->right);
 }
 
 void List::remove_afore(Node* pointer)
 {
-	Node* tmp = pointer->left;
-	if (tmp == head) {
-		pop_front();
-		return;
-	}
-	tmp->left->right = pointer;
-	pointer->left = tmp->left;
-	size--;
-	delete tmp;
+	erase_p(pointer->left);
 }
 
 void List::print()
@@ -212,12 +70,13 @@ void List::print()
 		std::cout << tmp->value << ' ';
 		tmp = tmp->right;
 	}
+	std::cout << '\n';
 }
 
-void List::destroy()
+void List::clear()
 {
 	while (head!= NULL) {
-		pop_back();
+		erase_p(tail);
 	}
 }
 
@@ -234,6 +93,7 @@ int List::search(int val)
 		if (val == tmp->value) {
 			return i;
 		}
+		tmp = tmp->right;
 	}
 	return - 1;
 }
@@ -249,18 +109,86 @@ int List::get(int index)
 
 void List::sortB()
 {
-	Node* cur = head;
-	for (int i = 1; i < size; i++) {
+	if (size == 1) { return; }
+	Node* cur_main = head->right;
+	do {
+		Node* cur = cur_main;
 		Node* tmp = cur->left;
 		while (cur->value < tmp->value){
-			if (tmp != head) { 
-				tmp = tmp->left; 
+			if (tmp != head) {
+				swap(cur, tmp);
+				cur = tmp;
+				tmp = cur->left;
 			}
-			else {
+			else{
+				swap(cur, tmp);
 				break;
 			}
 		}
-		swap(cur, tmp);
-		cur = cur->right;
-	}
+		cur_main = cur_main->right;
+	} while (cur_main != NULL);
+	if (tail->value < tail->left->value) { swap(tail, tail->left); }
 }
+
+
+
+void List::swap(Node* first, Node* second)
+{
+	int tmp;
+	tmp = first->value;
+	first->value = second->value;
+	second->value = tmp;
+}
+
+void List::create_node(Node* p_left, Node* p_right, int val)
+{
+	Node* cur = new Node;
+	cur->left = p_left;
+	cur->right = p_right;
+	cur->value = val;
+	if (p_right == NULL) {
+		tail = cur;
+	}
+	else {
+		p_right->left = cur;
+	}
+	if (p_left == NULL) {
+		head = cur;
+	}
+	else {
+		p_left->right = cur;
+	}
+	size++;
+
+}
+
+void List::erase_p(Node* pointer)
+{
+	Node* l = pointer->left;
+	Node* r = pointer->right;
+	if (l != NULL) {
+		l->right = r;
+	}
+	else {
+		head = r;
+	}
+	if (r != NULL) {
+		r->left = l;
+	}
+	else {
+		tail = l;
+	}
+	delete pointer;
+	size--;
+}
+
+Node* List::get_pointer(int index)
+{
+	Node* tmp = head;
+	for (int i = 0; i < index; i++) {
+		tmp = tmp->right;
+	}
+	return tmp;
+}
+
+

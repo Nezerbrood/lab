@@ -10,15 +10,11 @@ public:
 };
 class List
 {
-	void swap(Node* first, Node* second*);
-public:
+	int size = 0;
 	Node* head = NULL;
 	Node* tail = NULL;
-	int size = 0;
-	/*List() {
-		head = NULL;
-		tail = NULL;
-	}*/
+public:
+	int get_size() { return size;}
 	void push_back(int val);
 	void push_front(int val);
 	void push_in(int indx, int val);
@@ -31,11 +27,16 @@ public:
 	void remove_after(Node* pointer);
 	void remove_afore(Node* pointer);
 	void print();
-	void destroy();
+	void clear();
 	bool is_empty();
 	int search(int val);
 	int get(int index);
 	void sortB();
+	Node* get_pointer(int index);
+private:
+	void swap(Node* first, Node* second);
+	void create_node(Node* p_left, Node* p_right, int val);
+	void erase_p(Node* pointer);
 };
 
 // 1. возможность подключать как библиотеку
